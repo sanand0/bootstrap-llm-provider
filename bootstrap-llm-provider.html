@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>bootstrap-llm-provider</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container my-3">
+    <div style="max-width: 25rem">
+      <button id="basicConfig" class="m-1 btn btn-outline-dark">Basic Config</button>
+      <button id="alwaysShowModal" class="m-1 btn btn-primary">Always Show Modal</button>
+      <button id="customBaseURL" class="m-1 btn btn-success">Custom Base URL</button>
+      <button id="customStorage" class="m-1 btn btn-danger">Custom Storage</button>
+      <button id="customLabels" class="m-1 btn btn-secondary">Custom Labels</button>
+    </div>
+
+    <pre id="result" class="p-3 text-bg-dark my-5">Results will appear here</pre>
+  </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { openaiConfig } from "./bootstrap-llm-provider.js";
+    const resultElement = document.querySelector("#result");
+
+    document.getElementById('basicConfig').addEventListener('click', async () => {
+      showResult();
+    });
+    document.getElementById('alwaysShowModal').addEventListener('click', async () => {
+      showResult({ show: true });
+    });
+    document.getElementById('customBaseURL').addEventListener('click', async () => {
+      showResult({ defaultBaseUrls: ['https://api.openai.com/v1', 'https://openrouter.ai/api/v1'], show: true });
+    });
+    document.getElementById('customStorage').addEventListener('click', async () => {
+      showResult({ storage: sessionStorage, key: 'llmProvider', show: true });
+    });
+    document.getElementById('customLabels').addEventListener('click', async () => {
+      showResult({
+        storage: sessionStorage,
+        key: 'llmProvider',
+        title: "Pick a provider",
+        baseURLLabel: "Your URL",
+        apiKeyLabel: "Your Key",
+        buttonLabel: "Save",
+        show: true
+      });
+    });
+    async function showResult(config) {
+      resultElement.innerHTML = "Checking..."
+      try {
+        const result = await openaiConfig(config)
+        resultElement.innerHTML = JSON.stringify(result, null, 2);
+      } catch (e) {
+        resultElement.innerHTML = e;
+      }
+    }
+  </script>
+</body>
+
+</html>
