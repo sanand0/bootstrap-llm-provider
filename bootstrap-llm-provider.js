@@ -29,7 +29,7 @@ export const openaiConfig = async (options = {}) => {
     return { ...saved, models };
   }
   return await promptConfig(saved, options);
-}
+};
 
 function parseConfig(val) {
   try {
@@ -83,7 +83,7 @@ function promptConfig(saved, { storage, key, defaultBaseUrls, title, baseURLLabe
       </div>
     </form>
   </div>
-</div>`
+</div>`,
     );
     const modal = document.getElementById(id);
     const form = modal.querySelector("form");

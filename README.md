@@ -1,5 +1,10 @@
 # Bootstrap LLM Provider
 
+[![npm version](https://img.shields.io/npm/v/bootstrap-llm-provider.svg)](https://www.npmjs.com/package/bootstrap-llm-provider)
+[![Bootstrap](https://img.shields.io/badge/Framework-Bootstrap%205-7952b3)](https://getbootstrap.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/bootstrap-llm-provider)](https://bundlephobia.com/package/bootstrap-llm-provider)
+
 Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) via a Bootstrap modal
 
 ## Installation
@@ -13,7 +18,7 @@ npm install bootstrap-llm-provider@1
 ... and add this to your script:
 
 ```js
-import { openaiConfig } from "./node_modules/bootstrap-llm-provider/dist/bootstrap-llm-provider.js;
+import { openaiConfig } from "./node_modules/bootstrap-llm-provider/dist/bootstrap-llm-provider.js";
 ```
 
 To use via CDN, add this to your script:
@@ -35,11 +40,11 @@ const { baseURL, apiKey, models } = await openaiConfig({ show: true });
 
 // Custom Base URLs
 const { baseURL, apiKey, models } = await openaiConfig({
-  defaultBaseUrls: ['https://api.openai.com/v1', 'https://openrouter.com/api/v1'],
+  defaultBaseUrls: ["https://api.openai.com/v1", "https://openrouter.com/api/v1"],
 });
 
 // Custom Storage - store in sessionStorage.llmProvider
-const { baseURL, apiKey, models } = await openaiConfig({ storage: sessionStorage, key: 'llmProvider' })
+const { baseURL, apiKey, models } = await openaiConfig({ storage: sessionStorage, key: "llmProvider" });
 
 // Custom Babels
 const { baseURL, apiKey, models } = await openaiConfig({
@@ -51,7 +56,6 @@ const { baseURL, apiKey, models } = await openaiConfig({
 ```
 
 [](bootstrap-llm-provider.html ":include")
-
 
 ## API Reference
 

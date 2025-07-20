@@ -49,7 +49,7 @@ describe("bootstrap-llm-provider demo UI", () => {
   it("basicConfig: skips modal if config exists, fetches models", async () => {
     window.localStorage.setItem(
       "bootstrapLLMProvider_openaiConfig",
-      JSON.stringify({ baseURL: "https://api.openai.com/v1", apiKey: "sk-test" })
+      JSON.stringify({ baseURL: "https://api.openai.com/v1", apiKey: "sk-test" }),
     );
     window.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => ({ data: ["m1", "m2"] }) }));
     document.querySelector("#basicConfig").click();
@@ -60,7 +60,7 @@ describe("bootstrap-llm-provider demo UI", () => {
   it("alwaysShowModal: always opens modal, validates, fetches", async () => {
     window.localStorage.setItem(
       "bootstrapLLMProvider_openaiConfig",
-      JSON.stringify({ baseURL: "https://api.openai.com/v1", apiKey: "sk-old" })
+      JSON.stringify({ baseURL: "https://api.openai.com/v1", apiKey: "sk-old" }),
     );
     window.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => ({ data: ["m3"] }) }));
     document.querySelector("#alwaysShowModal").click();

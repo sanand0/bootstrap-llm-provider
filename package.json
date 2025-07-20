@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) via a Bootstrap modal",
   "main": "dist/bootstrap-llm-provider.js",
+  "exports": {
+    ".": "./dist/bootstrap-llm-provider.js"
+  },
   "keywords": [
     "bootstrap",
     "llm",
