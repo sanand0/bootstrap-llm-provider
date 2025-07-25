@@ -33,20 +33,20 @@ import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provide
 import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.1";
 
 // Basic Config - Opens a model and asks user for provider details
-const { baseURL, apiKey, models } = await openaiConfig();
+const { baseUrl, apiKey, models } = await openaiConfig();
 
 // API key is optional if your provider doesn't require one
 
 // Always Show Modal - even if user has provided information before
-const { baseURL, apiKey, models } = await openaiConfig({ show: true });
+const { baseUrl, apiKey, models } = await openaiConfig({ show: true });
 
 // Custom Base URLs (datalist)
-const { baseURL, apiKey, models } = await openaiConfig({
+const { baseUrl, apiKey, models } = await openaiConfig({
   defaultBaseUrls: ["https://api.openai.com/v1", "https://openrouter.com/api/v1"],
 });
 
 // Base URL Options (select)
-const { baseURL, apiKey, models } = await openaiConfig({
+const { baseUrl, apiKey, models } = await openaiConfig({
   baseUrls: [
     { url: "https://api.openai.com/v1", name: "OpenAI" },
     { url: "https://openrouter.com/api/v1", name: "OpenRouter" },
@@ -55,12 +55,12 @@ const { baseURL, apiKey, models } = await openaiConfig({
 });
 
 // Custom Storage - store in sessionStorage.llmProvider
-const { baseURL, apiKey, models } = await openaiConfig({ storage: sessionStorage, key: "llmProvider" });
+const { baseUrl, apiKey, models } = await openaiConfig({ storage: sessionStorage, key: "llmProvider" });
 
-// Custom Babels
-const { baseURL, apiKey, models } = await openaiConfig({
+// Custom Labels
+const { baseUrl, apiKey, models } = await openaiConfig({
   title: "Pick a provider",
-  baseURLLabel: "Your URL",
+  baseUrlLabel: "Your URL",
   apiKeyLabel: "Your Key",
   buttonLabel: "Save",
 });
@@ -78,19 +78,19 @@ async function openaiConfig({
   baseUrls: undefined,                            // array of { url, name } objects
   show: false,                                    // true will force prompt even if config exists
   title: "OpenAI API Configuration",              // modal dialog title
-  baseURLLabel: "API Base URL",                   // base URL label
+  baseUrlLabel: "API Base URL",                   // base URL label
   apiKeyLabel: "API Key",                         // api key label
   buttonLabel: "Save & Test",                     // submit button label
 })
-// Returns: { baseURL, apiKey, models: string[] }
+// Returns: { baseUrl, baseURL, apiKey, models: string[] }
 ```
 
 - If there's no valid config, or `show` is true, it displays a Bootstrap modal with:
   - Base URL input with datalist of `defaultBaseUrls`, or a select of `baseUrls`
   - API key input, may be empty, prefilled from storage if present
   - On submit, it:
-    1. Fetches `${baseURL}/models` using the API key
-    2. On success, save `{ baseURL, apiKey }` to storage under `key`; return `{ baseURL, apiKey, models }`
+    1. Fetches `${baseUrl}/models` using the API key
+    2. On success, save `{ baseUrl, apiKey }` to storage under `key`; return `{ baseUrl, baseURL, apiKey, models }`
     3. On failure, throws an Error
   - `baseUrls` overrides `defaultBaseUrls` if both are provided
 - If config exists, it skips the prompt, fetches models and returns
@@ -111,7 +111,7 @@ npm publish
 
 ## Changelog
 
-- **1.1.0** - 2025-07-25 - optional API key and `baseUrls` select
+- **1.1.0** - 2025-07-25 - optional API key, `baseUrls` select, `baseUrl` renamed (returns `baseURL` for compatibility)
 - **1.0.0** - 2025-07-20 - initial release
 
 ## License
