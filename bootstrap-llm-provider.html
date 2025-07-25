@@ -14,6 +14,7 @@
       <button id="customBaseURL" class="m-1 btn btn-success">Custom Base URL</button>
       <button id="customStorage" class="m-1 btn btn-danger">Custom Storage</button>
       <button id="customLabels" class="m-1 btn btn-secondary">Custom Labels</button>
+      <button id="baseUrlsSelect" class="m-1 btn btn-info">Base URL Select</button>
     </div>
 
     <pre id="result" class="p-3 text-bg-dark my-5">Results will appear here</pre>
@@ -54,6 +55,20 @@
         baseURLLabel: "Your URL",
         apiKeyLabel: "Your Key",
         buttonLabel: "Save",
+        show: true
+      });
+    });
+    document.getElementById('baseUrlsSelect').addEventListener('click', async () => {
+      showResult({
+        baseUrls: [{
+            url: 'https://api.openai.com/v1',
+            name: 'OpenAI'
+          },
+          {
+            url: 'https://openrouter.com/api/v1',
+            name: 'OpenRouter'
+          }
+        ],
         show: true
       });
     });

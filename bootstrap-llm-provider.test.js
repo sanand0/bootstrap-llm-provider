@@ -22,8 +22,10 @@ describe("bootstrap-llm-provider demo UI", () => {
   });
 
   function fillAndSubmitModal({ baseURL, apiKey }) {
-    document.querySelector("input[name=baseURL]").value = baseURL;
-    document.querySelector("input[name=apiKey]").value = apiKey;
+    const baseField = document.querySelector("[name=baseURL]");
+    baseField.value = baseURL;
+    const keyField = document.querySelector("input[name=apiKey]");
+    keyField.value = apiKey;
     document.querySelector("form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
   }
 
@@ -35,10 +37,13 @@ describe("bootstrap-llm-provider demo UI", () => {
     // Invalid URL
     fillAndSubmitModal({ baseURL: "bad", apiKey: "" });
     expect(document.querySelector(".text-danger").textContent).toMatch(/valid url/i);
-    // Valid URL, missing key
+    // Valid URL, empty key
     fillAndSubmitModal({ baseURL: "https://api.openai.com/v1", apiKey: "" });
-    expect(document.querySelector(".text-danger").textContent).toMatch(/api key/i);
+    await vi.waitFor(() => expect(document.querySelector("#llm-provider-modal")).toBeFalsy());
+    expect(window.fetch.mock.calls[0][1].headers).toEqual({});
+    expect(window.localStorage.getItem("bootstrapLLMProvider_openaiConfig")).toMatch(/"apiKey":""/);
     // Valid input
+    document.querySelector("#alwaysShowModal").click();
     fillAndSubmitModal({ baseURL: "https://api.openai.com/v1", apiKey: "sk-test" });
     await vi.waitFor(() => expect(document.querySelector("#llm-provider-modal")).toBeFalsy());
     expect(document.querySelector("#result").textContent).toMatch(/m1/);
@@ -77,6 +82,16 @@ describe("bootstrap-llm-provider demo UI", () => {
     expect(datalist.innerHTML).toContain("openrouter.ai");
     fillAndSubmitModal({ baseURL: "https://openrouter.ai/api/v1", apiKey: "sk-x" });
     await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/m4/));
+  });
+
+  it("baseUrlsSelect: renders select instead of input", async () => {
+    window.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => ({ data: ["m7"] }) }));
+    document.querySelector("#baseUrlsSelect").click();
+    const select = document.querySelector("select[name=baseURL]");
+    expect(select).toBeTruthy();
+    expect(select.options.length).toBe(2);
+    fillAndSubmitModal({ baseURL: "https://openrouter.com/api/v1", apiKey: "" });
+    await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/m7/));
   });
 
   it("customStorage: uses sessionStorage and custom key", async () => {
