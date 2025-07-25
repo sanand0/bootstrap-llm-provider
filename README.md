@@ -82,7 +82,7 @@ async function openaiConfig({
   apiKeyLabel: "API Key",                         // api key label
   buttonLabel: "Save & Test",                     // submit button label
 })
-// Returns: { baseUrl, baseURL, apiKey, models: string[] }
+// Returns: { baseUrl, apiKey, models: string[] }
 ```
 
 - If there's no valid config, or `show` is true, it displays a Bootstrap modal with:
@@ -90,7 +90,7 @@ async function openaiConfig({
   - API key input, may be empty, prefilled from storage if present
   - On submit, it:
     1. Fetches `${baseUrl}/models` using the API key
-    2. On success, save `{ baseUrl, apiKey }` to storage under `key`; return `{ baseUrl, baseURL, apiKey, models }`
+    2. On success, save `{ baseUrl, apiKey }` to storage under `key`; return `{ baseUrl, apiKey, models }`
     3. On failure, throws an Error
   - `baseUrls` overrides `defaultBaseUrls` if both are provided
 - If config exists, it skips the prompt, fetches models and returns
