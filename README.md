@@ -51,6 +51,7 @@ const { baseURL, apiKey, models } = await openaiConfig({
     { url: "https://api.openai.com/v1", name: "OpenAI" },
     { url: "https://openrouter.com/api/v1", name: "OpenRouter" },
   ],
+  // baseUrls overrides defaultBaseUrls
 });
 
 // Custom Storage - store in sessionStorage.llmProvider

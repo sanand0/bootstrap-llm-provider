@@ -72,11 +72,11 @@ function promptConfig(
 <div class="modal fade show" id="${id}" tabindex="-1" style="display:block;background:rgba(0,0,0,.4);z-index:1050;">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content shadow-sm">
-      <div class="modal-header bg-primary text-white">
+      <div class="modal-header">
         <h5 class="modal-title">${title}</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+        <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
-      <div class="modal-body bg-light">
+      <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">${baseURLLabel}</label>
           ${baseInput}
@@ -87,7 +87,7 @@ function promptConfig(
         </div>
         <div class="text-danger small" style="display:none"></div>
       </div>
-      <div class="modal-footer bg-light">
+      <div class="modal-footer">
         <button type="submit" class="btn btn-primary w-100">${buttonLabel}</button>
       </div>
     </form>
