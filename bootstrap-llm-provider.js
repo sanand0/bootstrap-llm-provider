@@ -6,9 +6,10 @@
  * @param {Object} opts
  * @param {Storage} opts.storage - Storage API (e.g. window.localStorage)
  * @param {string} opts.key - Storage key
- * @param {string[]} [opts.defaultBaseUrls] - Default base URLs
+ * @param {string[]} [opts.defaultBaseUrls] - Datalist URLs
+ * @param {{url: string, name: string}[]} [opts.baseUrls] - Select options
  * @param {boolean} [opts.show] - Force prompt even if config exists
- * @returns {Promise<{baseURL: string, apiKey: string, models: string[]}>}
+ * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
  */
 export const openaiConfig = async (options = {}) => {
   // Set defaults
@@ -16,17 +17,18 @@ export const openaiConfig = async (options = {}) => {
     storage: localStorage,
     key: "bootstrapLLMProvider_openaiConfig",
     defaultBaseUrls: ["https://api.openai.com/v1"],
+    baseUrls: undefined,
     show: false,
     title: "OpenAI API Configuration",
-    baseURLLabel: "API Base URL",
+    baseUrlLabel: "API Base URL",
     apiKeyLabel: "API Key",
     buttonLabel: "Save & Test",
     ...options,
   };
   const saved = parseConfig(options.storage.getItem(options.key));
   if (saved && !options.show) {
-    const models = await fetchModels(saved.baseURL, saved.apiKey);
-    return { ...saved, models };
+    const models = await fetchModels(saved.baseUrl, saved.apiKey);
+    return { ...saved, baseURL: saved.baseUrl, models };
   }
   return await promptConfig(saved, options);
 };
@@ -34,51 +36,63 @@ export const openaiConfig = async (options = {}) => {
 function parseConfig(val) {
   try {
     const c = JSON.parse(val);
-    if (c && typeof c.baseURL === "string" && typeof c.apiKey === "string") return c;
+    if (c && typeof c.baseUrl === "string" && typeof c.apiKey === "string") {
+      return { baseUrl: c.baseUrl, apiKey: c.apiKey };
+    }
+    if (c && typeof c.baseURL === "string" && typeof c.apiKey === "string") {
+      return { baseUrl: c.baseURL, apiKey: c.apiKey };
+    }
   } catch {}
 }
 
-async function fetchModels(baseURL, apiKey) {
-  if (!/^https?:\/\//.test(baseURL)) throw new Error("Invalid URL");
-  const r = await fetch(baseURL.replace(/\/$/, "") + "/models", {
-    headers: { Authorization: `Bearer ${apiKey}` },
-  });
+async function fetchModels(baseUrl, apiKey) {
+  if (!/^https?:\/\//.test(baseUrl)) throw new Error("Invalid URL");
+  const headers = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+  const r = await fetch(baseUrl.replace(/\/$/, "") + "/models", { headers });
   if (!r.ok) throw new Error("Invalid API key or URL");
   const { data } = await r.json();
   if (!data || !Array.isArray(data)) throw new Error("Invalid response");
   return data.map((m) => (typeof m === "string" ? m : m.id || "")).filter(Boolean);
 }
 
-function promptConfig(saved, { storage, key, defaultBaseUrls, title, baseURLLabel, apiKeyLabel, buttonLabel }) {
+function promptConfig(
+  saved,
+  { storage, key, defaultBaseUrls, baseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel },
+) {
   return new Promise((resolve, reject) => {
     removeModal();
     const id = "llm-provider-modal";
-    const base = saved?.baseURL || defaultBaseUrls[0];
+    const base = saved?.baseUrl || baseUrls?.[0]?.url || defaultBaseUrls[0];
     const api = saved?.apiKey || "";
     const datalist = defaultBaseUrls.map((u) => `<option value="${u}">`).join("");
+    const selectOpts = (baseUrls || [])
+      .map(({ url, name }) => `<option value="${url}" ${url === base ? "selected" : ""}>${name}</option>`)
+      .join("");
+    const baseInput = baseUrls
+      ? `<select name="baseUrl" class="form-select">${selectOpts}</select>`
+      : `<input name="baseUrl" type="url" class="form-control" list="llm-provider-dl" placeholder="https://api.openai.com/v1" value="${base}"><datalist id="llm-provider-dl">${datalist}</datalist>`;
     document.body.insertAdjacentHTML(
       "beforeend",
       /* html */ `
 <div class="modal fade show" id="${id}" tabindex="-1" style="display:block;background:rgba(0,0,0,.4);z-index:1050;">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content shadow-sm">
-      <div class="modal-header bg-primary text-white">
+      <div class="modal-header">
         <h5 class="modal-title">${title}</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+        <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
-      <div class="modal-body bg-light">
+      <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label">${baseURLLabel}</label>
-          <input name="baseURL" type="url" class="form-control" required list="llm-provider-dl" placeholder="https://api.openai.com/v1" value="${base}">
-          <datalist id="llm-provider-dl">${datalist}</datalist>
+          <label class="form-label">${baseUrlLabel}</label>
+          ${baseInput}
         </div>
         <div class="mb-3">
           <label class="form-label">${apiKeyLabel}</label>
-          <input name="apiKey" type="password" class="form-control" required autocomplete="off" value="${api}">
+          <input name="apiKey" type="password" class="form-control" autocomplete="off" value="${api}">
         </div>
         <div class="text-danger small" style="display:none"></div>
       </div>
-      <div class="modal-footer bg-light">
+      <div class="modal-footer">
         <button type="submit" class="btn btn-primary w-100">${buttonLabel}</button>
       </div>
     </form>
@@ -107,16 +121,15 @@ function promptConfig(saved, { storage, key, defaultBaseUrls, title, baseURLLabe
     form.onsubmit = async (e) => {
       e.preventDefault();
       errorDiv.style.display = "none";
-      const baseURL = form.baseURL.value.trim();
+      const baseUrl = form.baseUrl.value.trim();
       const apiKey = form.apiKey.value.trim();
-      if (!/^https?:\/\//.test(baseURL)) return showError("Enter a valid URL");
-      if (!apiKey) return showError("Enter API key");
+      if (!/^https?:\/\//.test(baseUrl)) return showError("Enter a valid URL");
       form.querySelector("button[type=submit]").disabled = true;
       try {
-        const models = await fetchModels(baseURL, apiKey);
-        storage.setItem(key, JSON.stringify({ baseURL, apiKey }));
+        const models = await fetchModels(baseUrl, apiKey);
+        storage.setItem(key, JSON.stringify({ baseUrl, apiKey }));
         cleanup();
-        resolve({ baseURL, apiKey, models });
+        resolve({ baseUrl, baseURL: baseUrl, apiKey, models });
       } catch (err) {
         showError(err.message);
         form.querySelector("button[type=submit]").disabled = false;
