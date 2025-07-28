@@ -12,7 +12,7 @@ Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) vi
 To use locally, install via `npm`:
 
 ```bash
-npm install bootstrap-llm-provider@1.1
+npm install bootstrap-llm-provider@1.2
 ```
 
 ... and add this to your script:
@@ -24,13 +24,13 @@ import { openaiConfig } from "./node_modules/bootstrap-llm-provider/dist/bootstr
 To use via CDN, add this to your script:
 
 ```js
-import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.1";
+import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
 ```
 
 ## Quick Start
 
 ```js
-import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.1";
+import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
 
 // Basic Config - Opens a model and asks user for provider details
 const { baseUrl, apiKey, models } = await openaiConfig();
@@ -64,6 +64,12 @@ const { baseUrl, apiKey, models } = await openaiConfig({
   apiKeyLabel: "Your Key",
   buttonLabel: "Save",
 });
+
+// Help HTML
+const { baseUrl, apiKey, models } = await openaiConfig({
+  help: '<div class="alert alert-info">Get your key from <a href="/">here</a></div>',
+  show: true,
+});
 ```
 
 [](bootstrap-llm-provider.html ":include")
@@ -77,6 +83,7 @@ async function openaiConfig({
   defaultBaseUrls: ["https://api.openai.com/v1"], // array of URL strings for user to pick from
   baseUrls: undefined,                            // array of { url, name } objects
   show: false,                                    // true will force prompt even if config exists
+  help: "",                                       // HTML rendered at top of modal
   title: "OpenAI API Configuration",              // modal dialog title
   baseUrlLabel: "API Base URL",                   // base URL label
   apiKeyLabel: "API Key",                         // api key label
@@ -88,6 +95,7 @@ async function openaiConfig({
 - If there's no valid config, or `show` is true, it displays a Bootstrap modal with:
   - Base URL input with datalist of `defaultBaseUrls`, or a select of `baseUrls`
   - API key input, may be empty, prefilled from storage if present
+  - `help` HTML inserted at the top if provided
   - On submit, it:
     1. Fetches `${baseUrl}/models` using the API key
     2. On success, save `{ baseUrl, apiKey }` to storage under `key`; return `{ baseUrl, apiKey, models }`
@@ -111,6 +119,7 @@ npm publish
 
 ## Changelog
 
+- **1.2.0** - 2025-07-30 - optional `help` HTML parameter
 - **1.1.0** - 2025-07-25 - optional API key, `baseUrls` select, `baseUrl` renamed (returns `baseURL` for compatibility)
 - **1.0.0** - 2025-07-20 - initial release
 

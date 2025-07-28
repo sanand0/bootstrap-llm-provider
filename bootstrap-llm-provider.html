@@ -15,12 +15,12 @@
       <button id="customStorage" class="m-1 btn btn-danger">Custom Storage</button>
       <button id="customLabels" class="m-1 btn btn-secondary">Custom Labels</button>
       <button id="baseUrlsSelect" class="m-1 btn btn-info">Base URL Select</button>
+      <button id="helpHtml" class="m-1 btn btn-warning">With Help</button>
     </div>
 
     <pre id="result" class="p-3 text-bg-dark my-5">Results will appear here</pre>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import {
       openaiConfig
@@ -70,6 +70,12 @@
           }
         ],
         // baseUrls overrides defaultBaseUrls
+        show: true
+      });
+    });
+    document.getElementById('helpHtml').addEventListener('click', async () => {
+      showResult({
+        help: '<div class="alert alert-info">Get your key from <a href="/">here</a></div>',
         show: true
       });
     });

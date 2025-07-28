@@ -96,6 +96,15 @@ describe("bootstrap-llm-provider demo UI", () => {
     await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/m7/));
   });
 
+  it("helpHtml: inserts unsanitized help HTML", async () => {
+    window.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => ({ data: ["m8"] }) }));
+    document.querySelector("#helpHtml").click();
+    const html = document.querySelector("#llm-provider-modal .modal-body").innerHTML.trim();
+    expect(html.startsWith('<div class="alert alert-info">')).toBe(true);
+    fillAndSubmitModal({ baseUrl: "https://api.openai.com/v1", apiKey: "" });
+    await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/m8/));
+  });
+
   it("customStorage: uses sessionStorage and custom key", async () => {
     window.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => ({ data: ["m5"] }) }));
     document.querySelector("#customStorage").click();
