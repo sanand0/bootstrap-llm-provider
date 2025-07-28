@@ -9,6 +9,7 @@
  * @param {string[]} [opts.defaultBaseUrls] - Datalist URLs
  * @param {{url: string, name: string}[]} [opts.baseUrls] - Select options
  * @param {boolean} [opts.show] - Force prompt even if config exists
+ * @param {string} [opts.help] - HTML to show at top of modal
  * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
  */
 export const openaiConfig = async (options = {}) => {
@@ -23,6 +24,7 @@ export const openaiConfig = async (options = {}) => {
     baseUrlLabel: "API Base URL",
     apiKeyLabel: "API Key",
     buttonLabel: "Save & Test",
+    help: "",
     ...options,
   };
   const saved = parseConfig(options.storage.getItem(options.key));
@@ -57,7 +59,7 @@ async function fetchModels(baseUrl, apiKey) {
 
 function promptConfig(
   saved,
-  { storage, key, defaultBaseUrls, baseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel },
+  { storage, key, defaultBaseUrls, baseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel, help },
 ) {
   return new Promise((resolve, reject) => {
     removeModal();
@@ -82,6 +84,7 @@ function promptConfig(
         <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        ${help || ""}
         <div class="mb-3">
           <label class="form-label">${baseUrlLabel}</label>
           ${baseInput}
