@@ -27,7 +27,7 @@ To use via CDN, add this to your script:
 import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
 ```
 
-## Quick Start
+## Usage
 
 ```js
 import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
@@ -74,7 +74,7 @@ const { baseUrl, apiKey, models } = await openaiConfig({
 
 [](bootstrap-llm-provider.html ":include")
 
-## API Reference
+## API
 
 ```js
 async function openaiConfig({
@@ -106,22 +106,22 @@ async function openaiConfig({
 ## Development
 
 ```bash
-# Clone the repository
 git clone https://github.com/sanand0/bootstrap-llm-provider.git
 cd bootstrap-llm-provider
 
 npm install
-npm run lint
-npm run build
-npm test
+npm run lint && npm run build && npm test
+
 npm publish
+git commit . -m"$COMMIT_MSG"; git tag $VERSION; git push --follow-tags
 ```
 
-## Changelog
+## Release notes
 
-- **1.2.0** - 2025-07-30 - optional `help` HTML parameter
-- **1.1.0** - 2025-07-25 - optional API key, `baseUrls` select, `baseUrl` renamed (returns `baseURL` for compatibility)
-- **1.0.0** - 2025-07-20 - initial release
+- [1.3.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.3.0): 30 Jul 2025. Standardized package.json & README.md
+- [1.2.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.2.0): 28 Jul 2025. Optional `help` HTML parameter
+- [1.1.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.1.0): 25 Jul 2025. Optional API key, `baseUrls` select, `baseUrl` renamed (returns `baseURL` for compatibility)
+- [1.0.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.0.0): 20 Jul 2025. Initial release
 
 ## License
 

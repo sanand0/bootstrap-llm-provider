@@ -1,37 +1,43 @@
 {
   "name": "bootstrap-llm-provider",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) via a Bootstrap modal",
-  "main": "dist/bootstrap-llm-provider.js",
-  "exports": {
-    ".": "./dist/bootstrap-llm-provider.js"
+  "homepage": "https://sanand0.github.io/bootstrap-llm-provider/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanand0/bootstrap-llm-provider.git"
+  },
+  "license": "MIT",
+  "author": "Anand S <root.node@gmail.com>",
+  "type": "module",
+  "module": "bootstrap-llm-provider.js",
+  "prettier": {
+    "printWidth": 120
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "exports": "./dist/bootstrap-llm-provider.js",
+  "scripts": {
+    "build": "npx -y esbuild bootstrap-llm-provider.js --format=esm --bundle --minify --allow-overwrite --sourcemap --outfile=dist/bootstrap-llm-provider.js",
+    "lint:oxlint": "npx -y oxlint --fix",
+    "lint:js-md": "npx -y prettier@3.5 --print-width 120 --write '**/*.js' '!**/*.min.js' '!dist/**' '**/*.md'",
+    "lint:html": "npx -y js-beautify@1 '**/*.html' --type html --replace --indent-size 2 --max-preserve-newlines 1 --end-with-newline",
+    "lint": "npm run lint:oxlint && npm run lint:js-md && npm run lint:html",
+    "test": "npx -y vitest run",
+    "prepublishOnly": "npm run lint && npm run build && npm test"
+  },
+  "peerDependencies": {
+    "bootstrap": "^5.3.7"
+  },
+  "devDependencies": {
+    "happy-dom": "^18.0.1"
   },
   "keywords": [
     "bootstrap",
     "llm",
     "provider"
-  ],
-  "author": "Anand S <root.node@gmail.com>",
-  "license": "MIT",
-  "homepage": "https://sanand0.github.io/bootstrap-llm-provider/",
-  "repository": "git@github.com:sanand0/bootstrap-llm-provider.git",
-  "files": [
-    "README.md",
-    "dist/*"
-  ],
-  "peerDependencies": {
-    "bootstrap": "^5.3.7"
-  },
-  "scripts": {
-    "build": "npx -y esbuild bootstrap-llm-provider.js --format=esm --bundle --minify --allow-overwrite --sourcemap --outfile=dist/bootstrap-llm-provider.js",
-    "lint:oxlint": "npx -y oxlint --fix",
-    "lint:js-md": "npx -y prettier@3.6 --print-width 120 --write '**/*.js' '!**/*.min.js' '**/*.md'",
-    "lint:html": "npx -y js-beautify@1 '**/*.html' --type html --replace --indent-size 2 --max-preserve-newlines 1 --end-with-newline",
-    "lint": "npm run lint:js-md && npm run lint:html",
-    "test": "npx -y vitest run",
-    "prepublishOnly": "npm run build && npm test"
-  },
-  "devDependencies": {
-    "happy-dom": "^18.0.1"
-  }
+  ]
 }
