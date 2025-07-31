@@ -118,7 +118,7 @@ git commit . -m"$COMMIT_MSG"; git tag $VERSION; git push --follow-tags
 
 ## Release notes
 
-- [1.3.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.3.0): 30 Jul 2025. Standardized package.json & README.md
+- [1.3.1](https://npmjs.com/package/bootstrap-llm-provider/v/1.3.1): 31 Jul 2025. Standardized package.json & README.md
 - [1.2.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.2.0): 28 Jul 2025. Optional `help` HTML parameter
 - [1.1.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.1.0): 25 Jul 2025. Optional API key, `baseUrls` select, `baseUrl` renamed (returns `baseURL` for compatibility)
 - [1.0.0](https://npmjs.com/package/bootstrap-llm-provider/v/1.0.0): 20 Jul 2025. Initial release
