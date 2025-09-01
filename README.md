@@ -9,22 +9,40 @@ Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) vi
 
 ## Installation
 
+Add this to your script:
+
+```js
+import { openaiConfig } from "bootstrap-llm-provider";
+```
+
+To use via CDN, add this to your HTML file:
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "bootstrap-llm-provider": "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1"
+    }
+  }
+</script>
+```
+
 To use locally, install via `npm`:
 
 ```bash
-npm install bootstrap-llm-provider@1.2
+npm install bootstrap-llm-provider
 ```
 
-... and add this to your script:
+... and add this to your HTML file:
 
-```js
-import { openaiConfig } from "./node_modules/bootstrap-llm-provider/dist/bootstrap-llm-provider.js";
-```
-
-To use via CDN, add this to your script:
-
-```js
-import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "bootstrap-llm-provider": "./node_modules/bootstrap-llm-provider/dist/bootstrap-llm-provider.js"
+    }
+  }
+</script>
 ```
 
 ## Usage
