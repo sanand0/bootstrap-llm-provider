@@ -139,4 +139,53 @@ describe("bootstrap-llm-provider demo UI", () => {
     await vi.waitFor(() => expect(document.querySelector("#llm-provider-modal")).toBeFalsy());
     await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/cancelled|Error/));
   });
+
+  it("geminiConfig: uses Google endpoint auth style and strips model prefix", async () => {
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => ({ models: [{ name: "models/gemini-1.5-flash" }, { name: "models/gemini-pro" }] }),
+      }),
+    );
+    document.querySelector("#geminiConfig").click();
+    fillAndSubmitModal({
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+      apiKey: "native-key",
+    });
+    await vi.waitFor(() => expect(document.querySelector("#llm-provider-modal")).toBeFalsy());
+    const [requestUrl, init] = window.fetch.mock.calls[0];
+    const parsed = new URL(requestUrl);
+    expect(parsed.origin + parsed.pathname).toBe("https://generativelanguage.googleapis.com/v1beta/models");
+    expect(parsed.searchParams.get("key")).toBe("native-key");
+    expect(init.headers).toMatchObject({ "x-goog-api-key": "native-key" });
+    const saved = window.localStorage.getItem("bootstrapLLMProvider_geminiConfig");
+    expect(saved).toMatch(/native-key/);
+    const res = JSON.parse(document.querySelector("#result").textContent);
+    expect(res.models).toEqual(["gemini-1.5-flash", "gemini-pro"]);
+  });
+
+  it("geminiConfig: uses bearer tokens for proxy endpoints", async () => {
+    window.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => ({ data: [{ id: "g1" }, { name: "models/g2" }] }) }),
+    );
+    document.querySelector("#geminiConfig").click();
+    fillAndSubmitModal({ baseUrl: "https://aipipe.org/geminiv1beta", apiKey: "proxy-token" });
+    await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/g1/));
+    const [, init] = window.fetch.mock.calls.at(-1);
+    expect(init.headers).toEqual({ Authorization: "Bearer proxy-token" });
+    expect(window.localStorage.getItem("bootstrapLLMProvider_geminiConfig")).toMatch(/proxy-token/);
+  });
+
+  it("geminiConfig: skips modal when config exists", async () => {
+    window.localStorage.setItem(
+      "bootstrapLLMProvider_geminiConfig",
+      JSON.stringify({ baseUrl: "https://aipipe.org/geminiv1beta", apiKey: "stored" }),
+    );
+    window.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => ({ data: [{ name: "models/gemini-store" }] }) }),
+    );
+    document.querySelector("#geminiConfig").click();
+    expect(document.querySelector("#result").textContent).toMatch(/Checking/);
+    await vi.waitFor(() => expect(document.querySelector("#result").textContent).toMatch(/gemini-store/));
+  });
 });

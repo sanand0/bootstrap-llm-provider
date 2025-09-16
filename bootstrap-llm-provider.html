@@ -16,76 +16,72 @@
       <button id="customLabels" class="m-1 btn btn-secondary">Custom Labels</button>
       <button id="baseUrlsSelect" class="m-1 btn btn-info">Base URL Select</button>
       <button id="helpHtml" class="m-1 btn btn-warning">With Help</button>
+      <button id="geminiConfig" class="m-1 btn btn-outline-primary">Gemini Config</button>
     </div>
 
     <pre id="result" class="p-3 text-bg-dark my-5">Results will appear here</pre>
   </div>
 
   <script type="module">
+    // @ts-check
     import {
+      geminiConfig,
       openaiConfig
     } from "./bootstrap-llm-provider.js";
     const resultElement = document.querySelector("#result");
-    document.getElementById('basicConfig').addEventListener('click', async () => {
-      showResult();
-    });
-    document.getElementById('alwaysShowModal').addEventListener('click', async () => {
-      showResult({
-        show: true
+    const attach = (id, options = {}, runner = openaiConfig) => {
+      document.getElementById(id).addEventListener("click", () => {
+        showResult({
+          ...options
+        }, runner);
       });
+    };
+    attach("basicConfig");
+    attach("alwaysShowModal", {
+      show: true
     });
-    document.getElementById('customBaseURL').addEventListener('click', async () => {
-      showResult({
-        defaultBaseUrls: ['https://api.openai.com/v1', 'https://openrouter.ai/api/v1'],
-        show: true
-      });
+    attach("customBaseURL", {
+      defaultBaseUrls: ["https://api.openai.com/v1", "https://openrouter.ai/api/v1"],
+      show: true
     });
-    document.getElementById('customStorage').addEventListener('click', async () => {
-      showResult({
-        storage: sessionStorage,
-        key: 'llmProvider',
-        show: true
-      });
+    attach("customStorage", {
+      storage: sessionStorage,
+      key: "llmProvider",
+      show: true
     });
-    document.getElementById('customLabels').addEventListener('click', async () => {
-      showResult({
-        storage: sessionStorage,
-        key: 'llmProvider',
-        title: "Pick a provider",
-        baseUrlLabel: "Your URL",
-        apiKeyLabel: "Your Key",
-        buttonLabel: "Save",
-        show: true
-      });
+    attach("customLabels", {
+      storage: sessionStorage,
+      key: "llmProvider",
+      title: "Pick a provider",
+      baseUrlLabel: "Your URL",
+      apiKeyLabel: "Your Key",
+      buttonLabel: "Save",
+      show: true,
     });
-    document.getElementById('baseUrlsSelect').addEventListener('click', async () => {
-      showResult({
-        baseUrls: [{
-            url: 'https://api.openai.com/v1',
-            name: 'OpenAI'
-          },
-          {
-            url: 'https://openrouter.com/api/v1',
-            name: 'OpenRouter'
-          }
-        ],
-        // baseUrls overrides defaultBaseUrls
-        show: true
-      });
+    attach("baseUrlsSelect", {
+      baseUrls: [{
+          url: "https://api.openai.com/v1",
+          name: "OpenAI"
+        },
+        {
+          url: "https://openrouter.com/api/v1",
+          name: "OpenRouter"
+        },
+      ],
+      show: true,
     });
-    document.getElementById('helpHtml').addEventListener('click', async () => {
-      showResult({
-        help: '<div class="alert alert-info">Get your key from <a href="/">here</a></div>',
-        show: true
-      });
+    attach("helpHtml", {
+      help: '<div class="alert alert-info">Get your key from <a href="/">here</a></div>',
+      show: true,
     });
-    async function showResult(config) {
-      resultElement.innerHTML = "Checking..."
+    attach("geminiConfig", {}, geminiConfig);
+    async function showResult(config = {}, runner = openaiConfig) {
+      resultElement.textContent = "Checking...";
       try {
-        const result = await openaiConfig(config)
-        resultElement.innerHTML = JSON.stringify(result, null, 2);
-      } catch (e) {
-        resultElement.innerHTML = e;
+        const result = await runner(config);
+        resultElement.textContent = JSON.stringify(result, null, 2);
+      } catch (error) {
+        resultElement.textContent = String(error);
       }
     }
 

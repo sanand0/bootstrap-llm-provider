@@ -12,7 +12,7 @@ Let users pick their OpenAI compatible API provider (e.g. OpenRouter, Ollama) vi
 Add this to your script:
 
 ```js
-import { openaiConfig } from "bootstrap-llm-provider";
+import { geminiConfig, openaiConfig } from "bootstrap-llm-provider";
 ```
 
 To use via CDN, add this to your HTML file:
@@ -48,7 +48,7 @@ npm install bootstrap-llm-provider
 ## Usage
 
 ```js
-import { openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
+import { geminiConfig, openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
 
 // Basic Config - Opens a model and asks user for provider details
 const { baseUrl, apiKey, models } = await openaiConfig();
@@ -88,6 +88,17 @@ const { baseUrl, apiKey, models } = await openaiConfig({
   help: '<div class="alert alert-info">Get your key from <a href="/">here</a></div>',
   show: true,
 });
+
+// Gemini Config - defaults to Google endpoint + three proxy hosts
+const gemini = await geminiConfig();
+console.log(gemini.baseUrl, gemini.apiKey, gemini.models);
+
+// Gemini Proxy example (forces proxy base URL and opens modal)
+const proxyResult = await geminiConfig({
+  defaultBaseUrls: ["https://aipipe.org/geminiv1beta"],
+  show: true,
+});
+// => { baseUrl: "https://aipipe.org/geminiv1beta", apiKey: "...", models: ["gemini-1.5-flash", ...] }
 ```
 
 [](bootstrap-llm-provider.html ":include")
@@ -109,6 +120,32 @@ async function openaiConfig({
 })
 // Returns: { baseUrl, apiKey, models: string[] }
 ```
+
+```js
+async function geminiConfig({
+  storage: localStorage,
+  key: "bootstrapLLMProvider_geminiConfig",
+  defaultBaseUrls: [
+    "https://generativelanguage.googleapis.com/v1beta",
+    "https://aipipe.org/geminiv1beta",
+    "https://llmfoundry.straive.com/gemini/v1beta",
+    "https://llmfoundry.straivedemo.com/gemini/v1beta",
+  ],
+  baseUrls: undefined,
+  show: false,
+  help: "",
+  title: "Google Gemini API Configuration",
+  baseUrlLabel: "Gemini API Base URL",
+  apiKeyLabel: "API Key or Token",
+  buttonLabel: "Save & Test",
+})
+// Returns: { baseUrl, apiKey, models: string[] }
+```
+
+- `geminiConfig` auto-detects Google's native host vs. proxies and sends the right auth headers:
+  - `https://generativelanguage.googleapis.com` receives both `x-goog-api-key` and `?key=` query params
+  - the provided proxy URLs receive `Authorization: Bearer <token>`
+- Responses from `{ models: [...] }` or `{ data: [...] }` are normalized and return bare model names (with `models/` stripped)
 
 - If there's no valid config, or `show` is true, it displays a Bootstrap modal with:
   - Base URL input with datalist of `defaultBaseUrls`, or a select of `baseUrls`

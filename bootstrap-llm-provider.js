@@ -1,3 +1,4 @@
+// @ts-check
 // Minimal OpenAI config modal for browser apps (Bootstrap style)
 // ESM, browser-only, no dependencies
 
@@ -10,6 +11,7 @@
  * @param {{url: string, name: string}[]} [opts.baseUrls] - Select options
  * @param {boolean} [opts.show] - Force prompt even if config exists
  * @param {string} [opts.help] - HTML to show at top of modal
+ * @param {(baseUrl: string, apiKey: string) => Promise<string[]>} [opts.fetchModels]
  * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
  */
 export const openaiConfig = async (options = {}) => {
@@ -24,15 +26,50 @@ export const openaiConfig = async (options = {}) => {
     baseUrlLabel: "API Base URL",
     apiKeyLabel: "API Key",
     buttonLabel: "Save & Test",
+    fetchModels: fetchOpenAIModels,
     help: "",
     ...options,
   };
   const saved = parseConfig(options.storage.getItem(options.key));
   if (saved && !options.show) {
-    const models = await fetchModels(saved.baseUrl, saved.apiKey);
+    const models = await options.fetchModels(saved.baseUrl, saved.apiKey);
     return { ...saved, baseURL: saved.baseUrl, models };
   }
   return await promptConfig(saved, options);
+};
+
+/**
+ * Prompt for Gemini API config with Google/proxy defaults.
+ * @param {Object} options
+ * @param {(baseUrl: string, apiKey: string) => Promise<string[]>} [options.fetchModels]
+ * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
+ */
+export const geminiConfig = async (options = {}) => {
+  options = {
+    storage: localStorage,
+    key: "bootstrapLLMProvider_geminiConfig",
+    defaultBaseUrls: [
+      "https://generativelanguage.googleapis.com/v1beta",
+      "https://aipipe.org/geminiv1beta",
+      "https://llmfoundry.straive.com/gemini/v1beta",
+      "https://llmfoundry.straivedemo.com/gemini/v1beta",
+    ],
+    baseUrls: undefined,
+    show: false,
+    title: "Google Gemini API Configuration",
+    baseUrlLabel: "Gemini API Base URL",
+    apiKeyLabel: "API Key or Token",
+    buttonLabel: "Save & Test",
+    fetchModels: fetchGeminiModels,
+    help: "",
+    ...options,
+  };
+  const saved = parseConfig(options.storage.getItem(options.key));
+  if (saved && !options.show) {
+    const models = await options.fetchModels(saved.baseUrl, saved.apiKey);
+    return { ...saved, baseURL: saved.baseUrl, models };
+  }
+  return promptConfig(saved, options);
 };
 
 function parseConfig(val) {
@@ -47,7 +84,7 @@ function parseConfig(val) {
   } catch {}
 }
 
-async function fetchModels(baseUrl, apiKey) {
+async function fetchOpenAIModels(baseUrl, apiKey) {
   if (!/^https?:\/\//.test(baseUrl)) throw new Error("Invalid URL");
   const headers = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
   const r = await fetch(baseUrl.replace(/\/$/, "") + "/models", { headers });
@@ -57,9 +94,47 @@ async function fetchModels(baseUrl, apiKey) {
   return data.map((m) => (typeof m === "string" ? m : m.id || "")).filter(Boolean);
 }
 
+async function fetchGeminiModels(baseUrl, apiKey) {
+  if (!/^https?:\/\//.test(baseUrl)) throw new Error("Enter a valid URL");
+  const endpoint = new URL(baseUrl.replace(/\/$/, "") + "/models");
+  const headers = {};
+  if (endpoint.hostname === "generativelanguage.googleapis.com") {
+    if (apiKey) {
+      endpoint.searchParams.set("key", apiKey);
+      headers["x-goog-api-key"] = apiKey;
+    }
+  } else if (apiKey) {
+    headers.Authorization = `Bearer ${apiKey}`;
+  }
+  const r = await fetch(endpoint.toString(), { headers });
+  if (!r.ok) throw new Error("Invalid API key or URL");
+  const payload = await r.json();
+  const list = payload.models || payload.data;
+  if (!Array.isArray(list)) throw new Error("Invalid response");
+  return list
+    .map((m) => {
+      if (typeof m === "string") return m;
+      const name = m.name || m.id || "";
+      return name;
+    })
+    .map((name) => name.replace(/^models\//, ""))
+    .filter(Boolean);
+}
+
 function promptConfig(
   saved,
-  { storage, key, defaultBaseUrls, baseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel, help },
+  {
+    storage,
+    key,
+    defaultBaseUrls,
+    baseUrls,
+    title,
+    baseUrlLabel,
+    apiKeyLabel,
+    buttonLabel,
+    help,
+    fetchModels = fetchOpenAIModels,
+  },
 ) {
   return new Promise((resolve, reject) => {
     removeModal();
