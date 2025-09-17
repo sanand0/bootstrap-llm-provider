@@ -156,7 +156,7 @@ describe("bootstrap-llm-provider", () => {
         fetchModels: async () => ["m7"],
         baseUrls: [
           { url: "https://api.openai.com/v1", name: "OpenAI" },
-          { url: "https://openrouter.com/api/v1", name: "OpenRouter" },
+          { url: "https://openrouter.ai/api/v1", name: "OpenRouter" },
         ],
       });
 
@@ -164,7 +164,7 @@ describe("bootstrap-llm-provider", () => {
       expect(baseField.tagName).toBe("SELECT");
       expect((baseField as HTMLSelectElement).options.length).toBe(2);
 
-      (baseField as HTMLSelectElement).value = "https://openrouter.com/api/v1";
+      (baseField as HTMLSelectElement).value = "https://openrouter.ai/api/v1";
       apiField.value = "";
       submitForm(form);
       await promise;

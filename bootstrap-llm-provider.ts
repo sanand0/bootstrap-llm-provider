@@ -49,21 +49,18 @@ export interface ResolvedConfigOptions {
 }
 
 export const openaiConfig = async (options: ConfigOptions = {}): Promise<ConfigState> => {
-  const config: ResolvedConfigOptions = {
-    storage: options.storage ?? localStorage,
-    key: options.key ?? "bootstrapLLMProvider_openaiConfig",
-    defaultBaseUrls: options.defaultBaseUrls ?? ["https://api.openai.com/v1"],
-    baseUrls: options.baseUrls,
-    show: options.show ?? false,
-    title: options.title ?? "OpenAI API Configuration",
-    baseUrlLabel: options.baseUrlLabel ?? "API Base URL",
-    apiKeyLabel: options.apiKeyLabel ?? "API Key",
-    buttonLabel: options.buttonLabel ?? "Save & Test",
-    fetchModels: options.fetchModels ?? fetchOpenAIModels,
-    help: options.help ?? "",
-  };
+  const config = resolveOptions(options, {
+    key: "bootstrapLLMProvider_openaiConfig",
+    defaultBaseUrls: ["https://api.openai.com/v1"],
+    title: "OpenAI API Configuration",
+    baseUrlLabel: "API Base URL",
+    apiKeyLabel: "API Key",
+    buttonLabel: "Save & Test",
+    fetchModels: fetchOpenAIModels,
+  });
   const saved = parseConfig(config.storage.getItem(config.key));
   if (saved && !config.show) {
+    // reuse stored credentials when modal is not forced
     const models = await config.fetchModels(saved.baseUrl, saved.apiKey);
     return { ...saved, baseURL: saved.baseUrl, models };
   }
@@ -71,31 +68,55 @@ export const openaiConfig = async (options: ConfigOptions = {}): Promise<ConfigS
 };
 
 export const geminiConfig = async (options: ConfigOptions = {}): Promise<ConfigState> => {
-  const config: ResolvedConfigOptions = {
-    storage: options.storage ?? localStorage,
-    key: options.key ?? "bootstrapLLMProvider_geminiConfig",
-    defaultBaseUrls: options.defaultBaseUrls ?? [
+  const config = resolveOptions(options, {
+    key: "bootstrapLLMProvider_geminiConfig",
+    defaultBaseUrls: [
       "https://generativelanguage.googleapis.com/v1beta",
       "https://aipipe.org/geminiv1beta",
       "https://llmfoundry.straive.com/gemini/v1beta",
       "https://llmfoundry.straivedemo.com/gemini/v1beta",
     ],
-    baseUrls: options.baseUrls,
-    show: options.show ?? false,
-    title: options.title ?? "Google Gemini API Configuration",
-    baseUrlLabel: options.baseUrlLabel ?? "Gemini API Base URL",
-    apiKeyLabel: options.apiKeyLabel ?? "API Key or Token",
-    buttonLabel: options.buttonLabel ?? "Save & Test",
-    fetchModels: options.fetchModels ?? fetchGeminiModels,
-    help: options.help ?? "",
-  };
+    title: "Google Gemini API Configuration",
+    baseUrlLabel: "Gemini API Base URL",
+    apiKeyLabel: "API Key or Token",
+    buttonLabel: "Save & Test",
+    fetchModels: fetchGeminiModels,
+  });
   const saved = parseConfig(config.storage.getItem(config.key));
   if (saved && !config.show) {
+    // reuse stored credentials when modal is not forced
     const models = await config.fetchModels(saved.baseUrl, saved.apiKey);
     return { ...saved, baseURL: saved.baseUrl, models };
   }
   return promptConfig(saved, config);
 };
+
+interface ConfigDefaults {
+  key: string;
+  defaultBaseUrls: string[];
+  title: string;
+  baseUrlLabel: string;
+  apiKeyLabel: string;
+  buttonLabel: string;
+  fetchModels: FetchModels;
+}
+
+function resolveOptions(options: ConfigOptions, defaults: ConfigDefaults): ResolvedConfigOptions {
+  // merge caller options with provider defaults before prompting or fetching
+  return {
+    storage: options.storage ?? localStorage,
+    key: options.key ?? defaults.key,
+    defaultBaseUrls: options.defaultBaseUrls ?? defaults.defaultBaseUrls,
+    baseUrls: options.baseUrls,
+    show: options.show ?? false,
+    title: options.title ?? defaults.title,
+    baseUrlLabel: options.baseUrlLabel ?? defaults.baseUrlLabel,
+    apiKeyLabel: options.apiKeyLabel ?? defaults.apiKeyLabel,
+    buttonLabel: options.buttonLabel ?? defaults.buttonLabel,
+    fetchModels: options.fetchModels ?? defaults.fetchModels,
+    help: options.help ?? "",
+  };
+}
 
 function parseConfig(val: string | null): StoredConfig | undefined {
   if (!val) return undefined;
@@ -103,9 +124,6 @@ function parseConfig(val: string | null): StoredConfig | undefined {
     const data = JSON.parse(val) as Partial<StoredConfig> & { baseURL?: string };
     if (data && typeof data.baseUrl === "string" && typeof data.apiKey === "string") {
       return { baseUrl: data.baseUrl, apiKey: data.apiKey };
-    }
-    if (data && typeof data.baseURL === "string" && typeof data.apiKey === "string") {
-      return { baseUrl: data.baseURL, apiKey: data.apiKey };
     }
   } catch {
     // no-op
@@ -161,6 +179,7 @@ function promptConfig(saved: StoredConfig | undefined, options: ResolvedConfigOp
     const id = "llm-provider-modal";
     const base = saved?.baseUrl ?? baseUrls?.[0]?.url ?? defaultBaseUrls[0] ?? "";
     const api = saved?.apiKey ?? "";
+    // render appropriate base URL control (select vs datalist-backed input)
     const datalist = defaultBaseUrls.map((url) => `<option value="${url}">`).join("");
     const selectOptions = (baseUrls ?? [])
       .map(({ url, name }) => `<option value="${url}" ${url === base ? "selected" : ""}>${name}</option>`)
@@ -261,6 +280,7 @@ function promptConfig(saved: StoredConfig | undefined, options: ResolvedConfigOp
       try {
         const models = await fetchModels(baseUrl, apiKey);
         const storedConfig: StoredConfig = { baseUrl, apiKey };
+        // persist successful config so future calls can avoid the modal
         storage.setItem(key, JSON.stringify(storedConfig));
         cleanup();
         resolve({ baseUrl, baseURL: baseUrl, apiKey, models });

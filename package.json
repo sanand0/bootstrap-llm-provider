@@ -32,9 +32,9 @@
     "lint:oxlint": "oxlint --fix",
     "lint:js-md": "prettier --print-width 120 --write '**/*.{js,ts}' '!**/*.min.js' '!dist/**' '**/*.md'",
     "lint:html": "js-beautify '**/*.html' --type html --replace --indent-size 2 --max-preserve-newlines 1 --end-with-newline",
-    "lint": "npm run lint:oxlint && npm run lint:js-md && npm run lint:html",
+    "lint:type": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
+    "lint": "npm run lint:oxlint && npm run lint:js-md && npm run lint:html && npm run lint:type",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "prepublishOnly": "npm run lint && npm run build && npm test"
   },
   "peerDependencies": {

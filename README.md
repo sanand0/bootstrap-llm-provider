@@ -50,7 +50,7 @@ npm install bootstrap-llm-provider
 ```js
 import { geminiConfig, openaiConfig } from "https://cdn.jsdelivr.net/npm/bootstrap-llm-provider@1.2";
 
-// Basic Config - Opens a model and asks user for provider details
+// Basic Config - Opens a modal and asks user for provider details
 const { baseUrl, apiKey, models } = await openaiConfig();
 
 // API key is optional if your provider doesn't require one
@@ -60,14 +60,14 @@ const { baseUrl, apiKey, models } = await openaiConfig({ show: true });
 
 // Custom Base URLs (datalist)
 const { baseUrl, apiKey, models } = await openaiConfig({
-  defaultBaseUrls: ["https://api.openai.com/v1", "https://openrouter.com/api/v1"],
+  defaultBaseUrls: ["https://api.openai.com/v1", "https://openrouter.ai/api/v1"],
 });
 
 // Base URL Options (select)
 const { baseUrl, apiKey, models } = await openaiConfig({
   baseUrls: [
     { url: "https://api.openai.com/v1", name: "OpenAI" },
-    { url: "https://openrouter.com/api/v1", name: "OpenRouter" },
+    { url: "https://openrouter.ai/api/v1", name: "OpenRouter" },
   ],
   // baseUrls overrides defaultBaseUrls
 });
