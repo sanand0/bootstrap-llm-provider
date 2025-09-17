@@ -10,7 +10,8 @@
   "license": "MIT",
   "author": "Anand S <root.node@gmail.com>",
   "type": "module",
-  "module": "bootstrap-llm-provider.js",
+  "module": "./dist/bootstrap-llm-provider.js",
+  "types": "./dist/bootstrap-llm-provider.d.ts",
   "prettier": {
     "printWidth": 120
   },
@@ -20,21 +21,34 @@
     "dist/"
   ],
   "browser": "dist/bootstrap-llm-provider.js",
-  "exports": "./dist/bootstrap-llm-provider.js",
+  "exports": {
+    ".": {
+      "types": "./dist/bootstrap-llm-provider.d.ts",
+      "default": "./dist/bootstrap-llm-provider.js"
+    }
+  },
   "scripts": {
-    "build": "npx -y esbuild bootstrap-llm-provider.js --format=esm --bundle --minify --allow-overwrite --sourcemap --outfile=dist/bootstrap-llm-provider.js",
-    "lint:oxlint": "npx -y oxlint --fix",
-    "lint:js-md": "npx -y prettier@3.5 --print-width 120 --write '**/*.js' '!**/*.min.js' '!dist/**' '**/*.md'",
-    "lint:html": "npx -y js-beautify@1 '**/*.html' --type html --replace --indent-size 2 --max-preserve-newlines 1 --end-with-newline",
+    "build": "tsc --emitDeclarationOnly && esbuild bootstrap-llm-provider.ts --format=esm --bundle --minify --allow-overwrite --sourcemap --outfile=dist/bootstrap-llm-provider.js",
+    "lint:oxlint": "oxlint --fix",
+    "lint:js-md": "prettier --print-width 120 --write '**/*.{js,ts}' '!**/*.min.js' '!dist/**' '**/*.md'",
+    "lint:html": "js-beautify '**/*.html' --type html --replace --indent-size 2 --max-preserve-newlines 1 --end-with-newline",
     "lint": "npm run lint:oxlint && npm run lint:js-md && npm run lint:html",
-    "test": "npx -y vitest run",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "prepublishOnly": "npm run lint && npm run build && npm test"
   },
   "peerDependencies": {
     "bootstrap": "^5.3.7"
   },
   "devDependencies": {
-    "happy-dom": "^18.0.1"
+    "esbuild": "^0.25.9",
+    "jsdom": "^24.0.0",
+    "@types/jsdom": "^21.1.6",
+    "js-beautify": "^1.15.4",
+    "oxlint": "^1.16.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "keywords": [
     "bootstrap",

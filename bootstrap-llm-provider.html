@@ -27,14 +27,12 @@
     import {
       geminiConfig,
       openaiConfig
-    } from "./bootstrap-llm-provider.js";
+    } from "./dist/bootstrap-llm-provider.js";
     const resultElement = document.querySelector("#result");
     const attach = (id, options = {}, runner = openaiConfig) => {
-      document.getElementById(id).addEventListener("click", () => {
-        showResult({
-          ...options
-        }, runner);
-      });
+      document.getElementById(id)?.addEventListener("click", () => showResult({
+        ...options
+      }, runner));
     };
     attach("basicConfig");
     attach("alwaysShowModal", {
@@ -76,6 +74,7 @@
     });
     attach("geminiConfig", {}, geminiConfig);
     async function showResult(config = {}, runner = openaiConfig) {
+      if (!resultElement) return;
       resultElement.textContent = "Checking...";
       try {
         const result = await runner(config);
