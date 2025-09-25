@@ -1,53 +1,77 @@
 // Minimal OpenAI config modal for browser apps (Bootstrap style)
 // ESM, browser-only, no dependencies
 
-/**
- * Prompt for OpenAI API config, save to storage, fetch models.
- * @param {Object} opts
- * @param {Storage} opts.storage - Storage API (e.g. window.localStorage)
- * @param {string} opts.key - Storage key
- * @param {string[]} [opts.defaultBaseUrls] - Datalist URLs
- * @param {{url: string, name: string}[]} [opts.baseUrls] - Select options
- * @param {boolean} [opts.show] - Force prompt even if config exists
- * @param {string} [opts.help] - HTML to show at top of modal
- * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
- */
-export const openaiConfig = async (options = {}) => {
-  // Set defaults
-  options = {
-    storage: localStorage,
-    key: "bootstrapLLMProvider_openaiConfig",
-    defaultBaseUrls: ["https://api.openai.com/v1"],
-    baseUrls: undefined,
-    show: false,
-    title: "OpenAI API Configuration",
-    baseUrlLabel: "API Base URL",
-    apiKeyLabel: "API Key",
-    buttonLabel: "Save & Test",
-    help: "",
-    ...options,
-  };
-  const saved = parseConfig(options.storage.getItem(options.key));
-  if (saved && !options.show) {
-    const models = await fetchModels(saved.baseUrl, saved.apiKey);
-    return { ...saved, baseURL: saved.baseUrl, models };
-  }
-  return await promptConfig(saved, options);
+const commonOptions = {
+  show: false,
+  help: "",
+  baseUrls: undefined,
+  baseUrlLabel: "API Base URL",
+  apiKeyLabel: "API Key",
+  buttonLabel: "Save & Test",
+  storage: localStorage,
 };
 
-function parseConfig(val) {
-  try {
-    const c = JSON.parse(val);
-    if (c && typeof c.baseUrl === "string" && typeof c.apiKey === "string") {
-      return { baseUrl: c.baseUrl, apiKey: c.apiKey };
+/**
+ *
+ * @param {Object} providerOptions
+ * @param {string} providerOptions.key - Storage key
+ * @param {string[]} providerOptions.defaultBaseUrls - Datalist URLs
+ * @param {string} providerOptions.title - Modal title
+ * @param {(baseUrl: string, apiKey: string) => Promise<string[]>} [providerOptions.fetchModels]
+ * @returns
+ */
+const makeConfig = (providerOptions) => {
+  /**
+   * Prompt for OpenAI API config, save to storage, fetch models.
+   * @param {Object} options
+   * @param {boolean} [options.show] - Force prompt even if config exists
+   * @param {string} [options.help] - HTML to show at top of modal
+   * @param {string[]} [options.defaultBaseUrls] - Datalist URLs
+   * @param {{url: string, name: string}[]} [options.baseUrls] - Select options
+   * @param {string} [options.title] - Modal title
+   * @param {string} [options.baseUrlLabel] - Label for base URL input
+   * @param {string} [options.apiKeyLabel] - Label for API key input
+   * @param {string} [options.buttonLabel] - Label for submit button
+   * @param {Storage} options.storage - Storage API (e.g. window.localStorage)
+   * @param {string} options.key - Storage key
+   * @param {(baseUrl: string, apiKey: string) => Promise<string[]>} [options.fetchModels]
+   * @returns {Promise<{baseUrl: string, baseURL: string, apiKey: string, models: string[]}>}
+   */
+  return async (options = {}) => {
+    const params = { ...commonOptions, ...providerOptions, ...options };
+    let saved;
+    try {
+      saved = JSON.parse(params.storage.getItem(params.key) || "null");
+    } catch {}
+    if (saved && !params.show) {
+      const models = await params.fetchModels?.(saved.baseUrl, saved.apiKey);
+      return { ...saved, baseURL: saved.baseUrl, models };
     }
-    if (c && typeof c.baseURL === "string" && typeof c.apiKey === "string") {
-      return { baseUrl: c.baseURL, apiKey: c.apiKey };
-    }
-  } catch {}
-}
+    return await promptConfig(saved, params);
+  };
+};
 
-async function fetchModels(baseUrl, apiKey) {
+export const openaiConfig = makeConfig({
+  key: "bootstrapLLMProvider_openaiConfig",
+  defaultBaseUrls: ["https://api.openai.com/v1"],
+  title: "OpenAI API Configuration",
+  fetchModels: fetchOpenAIModels,
+});
+
+export const geminiConfig = makeConfig({
+  key: "bootstrapLLMProvider_geminiConfig",
+  defaultBaseUrls: ["https://generativelanguage.googleapis.com/v1beta"],
+  title: "Google Gemini API Configuration",
+  fetchModels: fetchGeminiModels,
+});
+
+/**
+ *
+ * @param {string} baseUrl
+ * @param {string} apiKey
+ * @returns
+ */
+async function fetchOpenAIModels(baseUrl, apiKey) {
   if (!/^https?:\/\//.test(baseUrl)) throw new Error("Invalid URL");
   const headers = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
   const r = await fetch(baseUrl.replace(/\/$/, "") + "/models", { headers });
@@ -57,9 +81,25 @@ async function fetchModels(baseUrl, apiKey) {
   return data.map((m) => (typeof m === "string" ? m : m.id || "")).filter(Boolean);
 }
 
+/**
+ *
+ * @param {string} baseUrl
+ * @param {string} apiKey
+ * @returns
+ */
+async function fetchGeminiModels(baseUrl, apiKey) {
+  if (!/^https?:\/\//.test(baseUrl)) throw new Error("Enter a valid URL");
+  const headers = apiKey ? { "x-goog-api-key": apiKey } : {};
+  const r = await fetch(baseUrl.replace(/\/$/, "") + "/models", { headers });
+  if (!r.ok) throw new Error("Invalid API key or URL");
+  const { models } = await r.json();
+  if (!models || !Array.isArray(models)) throw new Error("Invalid response");
+  return models.map((m) => m.name.replace(/^models\//, ""));
+}
+
 function promptConfig(
   saved,
-  { storage, key, defaultBaseUrls, baseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel, help },
+  { help, baseUrls, defaultBaseUrls, title, baseUrlLabel, apiKeyLabel, buttonLabel, storage, key, fetchModels },
 ) {
   return new Promise((resolve, reject) => {
     removeModal();
